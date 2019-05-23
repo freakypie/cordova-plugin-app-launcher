@@ -192,6 +192,11 @@ public class Launcher extends CordovaPlugin {
 		if (options.has("flags")) {
 			flags = options.getInt("flags");
 		}
+        if (options.has("uri")) {
+            webView.getContext().sendBroadcast(
+                    new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse(options.getString("uri")))
+            );
+        }
 
 		if (options.has("uri") && (options.has("packageName") || options.has("dataType"))) {
 			String dataType = null;
@@ -202,7 +207,7 @@ public class Launcher extends CordovaPlugin {
 			if (options.has("dataType")) {
 				dataType = options.getString("dataType");
 			}
-			launchAppWithData(packageName, options.getString("uri"), dataType, extras);
+			launchAppWithData(packageName, options.getString("uri"), dataType, extras, flags);
 			return true;
 		} else if (options.has("packageName")) {
 			launchApp(options.getString("packageName"), extras);
@@ -343,13 +348,16 @@ public class Launcher extends CordovaPlugin {
 		return extras;
 	}
 
-	private void launchAppWithData(final String packageName, final String uri, final String dataType, final Bundle extras) throws JSONException {
+	private void launchAppWithData(final String packageName, final String uri, final String dataType, final Bundle extras, final int flags) throws JSONException {
 		final CordovaInterface mycordova = cordova;
 		final CordovaPlugin plugin = this;
 		final CallbackContext callbackContext = this.callback;
 		cordova.getThreadPool().execute(new LauncherRunnable(this.callback) {
 			public void run() {
 				Intent intent = new Intent(Intent.ACTION_VIEW);
+				if (flags != 0) {
+					intent.setFlags(flags);
+				}
 				if (dataType != null) {
 					intent.setDataAndType(Uri.parse(uri), dataType);
 				} else {
