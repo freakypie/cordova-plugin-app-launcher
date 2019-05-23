@@ -174,11 +174,23 @@ public class Launcher extends CordovaPlugin {
 		final PackageManager pm = webView.getContext().getPackageManager();
 		try {
 			Log.d(TAG, pm.getApplicationInfo(appPackageName, 0) + "");
-		}catch (NameNotFoundException e) {
+		} catch (NameNotFoundException e) {
 			Log.i(TAG, "No info found for package: " + appPackageName);
 		}
 		return null;
 	}
+	
+	private boolean scan(JSONArray args) throws JSONException {
+		final JSONObject options = args.getJSONObject(0);
+		final JSONArray files = options.getJSONArray("files");
+		for (int x=0; x<files.length(); x+=1) {
+			webView.getContext().sendBroadcast(new Intent(
+				Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
+				Uri.parse(files.getString(x))));
+		}
+		return true;
+	}
+
 
 	private boolean launch(JSONArray args) throws JSONException {
 		final JSONObject options = args.getJSONObject(0);
